@@ -280,9 +280,9 @@ int main(){
 	cin >> n >> m >> per;
 	c = n * m * per / 100;
 	system("clear");
-	int ch = KEYBOARD::getkey();
+	KEYBOARD::getkey();
 	IMAGE::prints("I or ^ - to move up\nJ or <- - to move left\nK or v - to move down\nL or -> - to move Right\nEnter - to dig\nR - to put a flag", {BOLD, RED, NONE});
-	ch = KEYBOARD::getkey();
+	KEYBOARD::getkey();
 	system("clear");
 	game();	
 }
