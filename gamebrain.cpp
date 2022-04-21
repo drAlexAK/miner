@@ -157,23 +157,26 @@ int movement(){
 	return 0;
 }
 
-void print(vector<vector<int>> &table){
-	for(int i = 1; i <= n; i++) {for(int j = 1; j <= m; j++) if(table[i][j] == -2) IMAGE::printc(i, j, ".", {NONE, 37, 40}); else IMAGE::printc(i, j, to_string(table[i][j]), {NONE, 37, 40}); cout << "\n";}
-}
-
 void printcur(int i, int j, IMAGE::font f){
-	if(visiualtable[i][j] == -3) {return;}
-	/*if(table[i][j] == -2) IMAGE::printc(i, j, ".", f); else */if(visiualtable[i][j] != -2) IMAGE::printc(i, j, to_string(visiualtable[i][j]), f);
+	if(visiualtable[i][j] == -3) {IMAGE::printc(i, j, "#", f); return;}
+	/*if(table[i][j] == -2) IMAGE::printc(i, j, ".", f); else */if(visiualtable[i][j] > -1) IMAGE::printc(i, j, to_string(visiualtable[i][j]), f);
 	else IMAGE::printc(i, j, ".", f);
 	// printcur(n+3, 1, {INVISIBLE, WHITE, NONE});
 }
 
-void bfs(pair<int, int> v){
-	if(table[v.first][v.second] != -1) visiualtable[v.first][v.second] = table[v.first][v.second];
+void print(vector<vector<int>> &table){
+	for(int i = 1; i <= n; i++) {for(int j = 1; j <= m; j++) printcur(i, j, {NONE, 37, 40}); cout << "\n";}
+}
 
-	if(used[v.first][v.second] == 1 || table[v.first][v.second] != 0) return;
+void bfs(pair<int, int> v){
+	if(used[v.first][v.second] == 1) return;
+
 	used[v.first][v.second] = 1;
+
+	if(table[v.first][v.second] != -1) visiualtable[v.first][v.second] = table[v.first][v.second];
 	
+	if(table[v.first][v.second] != 0) return;
+
 	int x = v.first;
 	int y = v.second;
 
@@ -181,6 +184,10 @@ void bfs(pair<int, int> v){
 	bfs({x+1, y});
 	bfs({x, y+1});
 	bfs({x, y-1});
+	bfs({x-1, y+1});
+	bfs({x-1, y-1});
+	bfs({x+1, y+1});
+	bfs({x+1, y-1});
 }
 
 bool ifwin(){
@@ -192,7 +199,7 @@ bool ifwin(){
 	return true;
 }
 
-void build(){
+void game(){
 	table.resize(n+2, vector<int> (m+2, -1)); for(int i = 1; i <= n; i++) for(int j = 1; j<=m; j++) table[i][j] = 0;
 
 	visiualtable.resize(n+2, vector<int> (m+2, -2));
@@ -237,7 +244,17 @@ void build(){
 		lasty = y;
 		int bl = movement();
 		if(bl == 2){
-			IMAGE::printc(x, y, "#", {BOLD, RED, BG_BLACK});
+			if(visiualtable[x][y] == -3){
+				if(used[x][y]){
+					IMAGE::printc(x, y, to_string(table[x][y]), {BOLD, WHITE, BG_BLACK});
+					visiualtable[x][y] = table[x][y];
+				}else{
+					IMAGE::printc(x, y, ".", {BOLD, WHITE, BG_BLACK});
+					visiualtable[x][y] = -1;
+				}
+				continue;
+			}
+			IMAGE::printc(x, y, "#", {BOLD, WHITE, BG_BLACK});
 			visiualtable[x][y] = -3;
 			continue;
 		}
@@ -246,14 +263,12 @@ void build(){
 		if(!bl) continue;
 		int a = x;
 		int b = y;
-		if(table[a][b] == 0) bfs({a, b});
-		else if(table[a][b] == -1){
+		if(table[a][b] == -1){
 			system("clear");
 			IMAGE::prints("LOSER", {BOLD, RED, NONE});
 			exit(0);
-		}else{
-			visiualtable[a][b] = table[a][b];
 		}
+		bfs({a, b});
 		print(visiualtable);
 		printcur(x, y, {BLINKING, WHITE, BG_BLACK});
 	}
@@ -261,10 +276,13 @@ void build(){
 
 
 int main(){
-	IMAGE::prints("PLEASE ENTER N, M, \% OF MINES IN FIELD\n", {BOLD, RED, NONE});
+	IMAGE::prints("PLEASE ENTER N, M, \% OF MINES IN THE FIELD\n", {BOLD, RED, NONE});
 	cin >> n >> m >> per;
 	c = n * m * per / 100;
 	system("clear");
-	//cout << c << "\n";
-	build();	
+	int ch = KEYBOARD::getkey();
+	IMAGE::prints("I or ^ - to move up\nJ or <- - to move left\nK or v - to move down\nL or -> - to move Right\nEnter - to dig\nR - to put a flag", {BOLD, RED, NONE});
+	ch = KEYBOARD::getkey();
+	system("clear");
+	game();	
 }
