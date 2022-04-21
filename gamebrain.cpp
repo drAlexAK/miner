@@ -199,6 +199,15 @@ bool ifwin(){
 	return true;
 }
 
+pair<int, int> findfirstzero(){
+	for(int i = 1; i <= n; i++){
+		for(int j = 1; j <= m; j++){
+			if(table[i][j] == 0) return {i, j};
+		}
+	}
+	return {0, 0};
+}
+
 void game(){
 	table.resize(n+2, vector<int> (m+2, -1)); for(int i = 1; i <= n; i++) for(int j = 1; j<=m; j++) table[i][j] = 0;
 
@@ -229,8 +238,12 @@ void game(){
 	}
 
 	//int a, b;
-	auto j = KEYBOARD::getkey();
-	int lastx = j, lasty = j;
+	//KEYBOARD::getkey();
+	int lastx = 0, lasty = 0;
+
+	bfs(findfirstzero());
+	print(visiualtable);
+
 	printcur(1,1, {BLINKING, WHITE, BG_BLACK});
 	// IMAGE::printc(1, 1, visiualtable[1][1], {BLINKING, WHITE, BG_BLACK});
 	while(1){
@@ -273,7 +286,6 @@ void game(){
 		printcur(x, y, {BLINKING, WHITE, BG_BLACK});
 	}
 }
-
 
 int main(){
 	IMAGE::prints("PLEASE ENTER N, M, \% OF MINES IN THE FIELD\n", {BOLD, RED, NONE});
