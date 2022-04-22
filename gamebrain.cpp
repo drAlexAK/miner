@@ -207,20 +207,11 @@ bool ifwin(){
 	return true;
 }
 
-pair<int, int> findfirstzero(){
-	for(int i = 1; i <= n; i++){
-		for(int j = 1; j <= m; j++){
-			if(table[i][j] == 0) return {i, j};
-		}
-	}
-	return {0, 0};
-}
-
 void printlose(){
 	for(int i = 1; i <= n; i++){
 		for(int j = 1; j <= m; j++){
 			if(table[i][j] == -1){
-			IMAGE::printc(i, j, "*", {BLINKING, RED, BG_WHITE});
+			IMAGE::printc(i, j, "*", {BOLD, RED, BG_WHITE});
 			}else{
 			printcur(i, j, {NONE, BLACK, BG_WHITE});
 			}
@@ -229,24 +220,19 @@ void printlose(){
 	}
 }
 
-void game(){
-	table.resize(n+2, vector<int> (m+2, -1)); for(int i = 1; i <= n; i++) for(int j = 1; j<=m; j++) table[i][j] = 0;
-
-	visiualtable.resize(n+2, vector<int> (m+2, -2));
-	used.resize(n+2, vector<int> (m+2, 0));
-
+void buildfield(int xx, int yy){
 	set<pair<int, int>> st;
 
 	for(int i = 0; (int)st.size() < c; i++){
 		int x = rnd() % n + 1;
 		int y = rnd() % m + 1;
-		if(st.count({x, y}) != 0) continue;
+		if(st.count({x, y}) != 0 || abs(x-xx) <= 1 && abs(y-yy) <= 1) continue;
 		st.insert({x, y});
 		table[x][y] = -1;
 	}
+}
 
-	print(visiualtable);
-
+void buildtable(){
 	for(int i = 1; i <= n; i++){
 		for(int j = 1; j <= m; j++){
 			if(table[i][j] == -1) continue;
@@ -257,18 +243,28 @@ void game(){
 			}
 		}
 	}
+}
+
+void game(){
+	table.resize(n+2, vector<int> (m+2, -1)); for(int i = 1; i <= n; i++) for(int j = 1; j<=m; j++) table[i][j] = 0;
+
+	visiualtable.resize(n+2, vector<int> (m+2, -2));
+	used.resize(n+2, vector<int> (m+2, 0));
+
+	print(visiualtable);
 
 	//int a, b;
 	//KEYBOARD::getkey();
 	int lastx = 0, lasty = 0;
 
-	bfs(findfirstzero());
+	//bfs(findfirstzero());
 	print(visiualtable);
 
 	printcur(1,1, {BLINKING, BLACK, BG_WHITE});
+	int count = 0;
 	// IMAGE::printc(1, 1, visiualtable[1][1], {BLINKING, WHITE, BG_BLACK});
 	while(1){
-		if(ifwin()){
+		if(ifwin() && count > 0){
 			system("clear");
 			IMAGE::prints("genius\n", {BOLD, RED, NONE});
 			//auto ch = KEYBOARD::getkey();
@@ -303,7 +299,9 @@ void game(){
 			printlose();
 			exit(0);
 		}
+		if(count == 0) {buildfield(a, b); buildtable();}
 		bfs({a, b});
+		count++;
 		print(visiualtable);
 		printcur(x, y, {BLINKING, BLACK, BG_WHITE});
 	}
