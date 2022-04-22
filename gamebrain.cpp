@@ -78,7 +78,7 @@ public:
 
     static void printc(int x, int y, const std::string &s, font f) {
         string cmd = f.get_string();
-        printf("\033[%d;%dH\x1b[%sm%s\x1b[0m", x, y, cmd.c_str(), s.c_str());
+        printf("\033[%d;%dH\x1b[%sm%s\x1b[0m", x+1, y+1, cmd.c_str(), s.c_str());
         fflush(stdout);
     }
 
@@ -159,13 +159,21 @@ int movement(){
 
 void printcur(int i, int j, IMAGE::font f){
 	if(visiualtable[i][j] == -3) {IMAGE::printc(i, j, "#", f); return;}
-	/*if(table[i][j] == -2) IMAGE::printc(i, j, ".", f); else */if(visiualtable[i][j] > -1) IMAGE::printc(i, j, to_string(visiualtable[i][j]), f);
+	if(visiualtable[i][j] > -1 && table[i][j] == 0) IMAGE::printc(i, j, "░", f);
+	else if(visiualtable[i][j] > -1) IMAGE::printc(i, j, to_string(visiualtable[i][j]), f);
 	else IMAGE::printc(i, j, ".", f);
-	// printcur(n+3, 1, {INVISIBLE, WHITE, NONE});
 }
 
 void print(vector<vector<int>> &table){
-	for(int i = 1; i <= n; i++) {for(int j = 1; j <= m; j++) printcur(i, j, {NONE, 37, 40}); cout << "\n";}
+	for(int i = 1; i <= m; i++) IMAGE::printc(0, i, "━", {NONE, NONE, NONE});
+	for(int i = 1; i <= m; i++) IMAGE::printc(n+1, i, "━", {NONE, NONE, NONE});
+	for(int i = 1; i <= n; i++) IMAGE::printc(i, m+1, "┃", {NONE, NONE, NONE});
+	for(int i = 1; i <= n; i++) IMAGE::printc(i, 0, "┃", {NONE, NONE, NONE});
+	IMAGE::printc(n+1, 0, "┗", {NONE, NONE, NONE});
+	IMAGE::printc(0, m+1, "┓", {NONE, NONE, NONE});
+	IMAGE::printc(n+1, m+1, "┛", {NONE, NONE, NONE});
+	IMAGE::printc(0, 0, "┏", {NONE, NONE, NONE});
+	for(int i = 1; i <= n; i++) {for(int j = 1; j <= m; j++) printcur(i, j, {NONE, BLACK, BG_WHITE}); cout << "\n";}
 }
 
 void bfs(pair<int, int> v){
@@ -208,6 +216,19 @@ pair<int, int> findfirstzero(){
 	return {0, 0};
 }
 
+void printlose(){
+	for(int i = 1; i <= n; i++){
+		for(int j = 1; j <= m; j++){
+			if(table[i][j] == -1){
+			IMAGE::printc(i, j, "*", {BLINKING, RED, BG_WHITE});
+			}else{
+			printcur(i, j, {NONE, BLACK, BG_WHITE});
+			}
+		}
+		cout << "\n";
+	}
+}
+
 void game(){
 	table.resize(n+2, vector<int> (m+2, -1)); for(int i = 1; i <= n; i++) for(int j = 1; j<=m; j++) table[i][j] = 0;
 
@@ -244,7 +265,7 @@ void game(){
 	bfs(findfirstzero());
 	print(visiualtable);
 
-	printcur(1,1, {BLINKING, WHITE, BG_BLACK});
+	printcur(1,1, {BLINKING, BLACK, BG_WHITE});
 	// IMAGE::printc(1, 1, visiualtable[1][1], {BLINKING, WHITE, BG_BLACK});
 	while(1){
 		if(ifwin()){
@@ -259,31 +280,32 @@ void game(){
 		if(bl == 2){
 			if(visiualtable[x][y] == -3){
 				if(used[x][y]){
-					IMAGE::printc(x, y, to_string(table[x][y]), {BOLD, WHITE, BG_BLACK});
+					IMAGE::printc(x, y, to_string(table[x][y]), {BOLD, BLACK, BG_WHITE});
 					visiualtable[x][y] = table[x][y];
 				}else{
-					IMAGE::printc(x, y, ".", {BOLD, WHITE, BG_BLACK});
+					IMAGE::printc(x, y, ".", {BOLD, BLACK, BG_WHITE});
 					visiualtable[x][y] = -1;
 				}
 				continue;
 			}
-			IMAGE::printc(x, y, "#", {BOLD, WHITE, BG_BLACK});
+			IMAGE::printc(x, y, "#", {BOLD, BLACK, BG_WHITE});
 			visiualtable[x][y] = -3;
 			continue;
 		}
-		printcur(lastx, lasty, {NONE, WHITE, BG_BLACK});
-		printcur(x, y, {BLINKING, WHITE, BG_BLACK});
+		printcur(lastx, lasty, {NONE, BLACK, BG_WHITE});
+		printcur(x, y, {BLINKING, BLACK, BG_WHITE});
 		if(!bl) continue;
 		int a = x;
 		int b = y;
 		if(table[a][b] == -1){
 			system("clear");
-			IMAGE::prints("LOSER", {BOLD, RED, NONE});
+			IMAGE::prints("LOSER\n", {BOLD, RED, NONE});
+			printlose();
 			exit(0);
 		}
 		bfs({a, b});
 		print(visiualtable);
-		printcur(x, y, {BLINKING, WHITE, BG_BLACK});
+		printcur(x, y, {BLINKING, BLACK, BG_WHITE});
 	}
 }
 
@@ -293,8 +315,8 @@ int main(){
 	c = n * m * per / 100;
 	system("clear");
 	KEYBOARD::getkey();
-	IMAGE::prints("I or ^ - to move up\nJ or <- - to move left\nK or v - to move down\nL or -> - to move Right\nEnter - to dig\nR - to put a flag", {BOLD, RED, NONE});
+	IMAGE::prints("i or ^ - to move up\nj or <- - to move left\nk or v - to move down\nl or -> - to move Right\nEnter - to dig\nr - to put a flag", {BOLD, RED, NONE});
 	KEYBOARD::getkey();
 	system("clear");
-	game();	
+	game();
 }
