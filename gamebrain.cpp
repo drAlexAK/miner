@@ -114,6 +114,7 @@ public:
 };
 
 
+
 int getcommand(){
 	int ch = KEYBOARD::getkey();
 	return ch;
@@ -226,7 +227,7 @@ void buildfield(int xx, int yy){
 	for(int i = 0; (int)st.size() < c; i++){
 		int x = rnd() % n + 1;
 		int y = rnd() % m + 1;
-		if(st.count({x, y}) != 0 || abs(x-xx) <= 1 && abs(y-yy) <= 1) continue;
+		if(st.count({x, y}) != 0 || (abs(x-xx) <= 1 && abs(y-yy) <= 1)) continue;
 		st.insert({x, y});
 		table[x][y] = -1;
 	}
@@ -245,6 +246,12 @@ void buildtable(){
 	}
 }
 
+void printstr(int x, int y, string s){
+	for(int i = 0; i < (int)s.size(); i++){
+		IMAGE::printc(x, y+i, s.substr(i, 1), {NONE, NONE, NONE});
+	}
+}
+
 void game(){
 	table.resize(n+2, vector<int> (m+2, -1)); for(int i = 1; i <= n; i++) for(int j = 1; j<=m; j++) table[i][j] = 0;
 
@@ -252,6 +259,10 @@ void game(){
 	used.resize(n+2, vector<int> (m+2, 0));
 
 	print(visiualtable);
+
+	printstr(n+3, 0, "press i, j, k, l to move");
+	printstr(n+3, 29, "press r to put/delete a flag");
+	printstr(n+3, 63, "press Enter to open some space");
 
 	//int a, b;
 	//KEYBOARD::getkey();
@@ -262,11 +273,13 @@ void game(){
 
 	printcur(1,1, {BLINKING, BLACK, BG_WHITE});
 	int count = 0;
-	// IMAGE::printc(1, 1, visiualtable[1][1], {BLINKING, WHITE, BG_BLACK});
+	
 	while(1){
+		//IMAGE::printc(n+5, 0, " ", {INVISIBLE, NONE, NONE});
 		if(ifwin() && count > 0){
 			system("clear");
-			IMAGE::prints("genius\n", {BOLD, RED, NONE});
+			IMAGE::prints("You WIN\n", {BOLD, RED, NONE});
+			//cout << "Your time: " <<  (double)clock() / CLOCKS_PER_SEC << "\n";
 			//auto ch = KEYBOARD::getkey();
 			exit(0);
 		}
@@ -276,7 +289,11 @@ void game(){
 		if(bl == 2){
 			if(visiualtable[x][y] == -3){
 				if(used[x][y]){
+					if(table[x][y] != 0){
 					IMAGE::printc(x, y, to_string(table[x][y]), {BOLD, BLACK, BG_WHITE});
+					}else{
+					IMAGE::printc(x, y, "░", {BOLD, BLACK, BG_WHITE});
+					}
 					visiualtable[x][y] = table[x][y];
 				}else{
 					IMAGE::printc(x, y, ".", {BOLD, BLACK, BG_WHITE});
@@ -295,11 +312,11 @@ void game(){
 		int b = y;
 		if(table[a][b] == -1){
 			system("clear");
-			IMAGE::prints("LOSER\n", {BOLD, RED, NONE});
+			IMAGE::prints("You LOSE\n", {BOLD, RED, NONE});
 			printlose();
 			exit(0);
 		}
-		if(count == 0) {buildfield(a, b); buildtable();}
+		if(count == 0) { buildfield(a, b); buildtable();}
 		bfs({a, b});
 		count++;
 		print(visiualtable);
@@ -308,12 +325,15 @@ void game(){
 }
 
 int main(){
-	IMAGE::prints("PLEASE ENTER N, M, \% OF MINES IN THE FIELD\n", {BOLD, RED, NONE});
+	cout << " _   __  __ _              \n| |_|  \\/  (_)_ _  ___ _ _ \n|  _| |\\/| | | ' \\/ -_) '_|\n \\__|_|  |_|_|_||_\\___|_|  \n\n\n\n\nPress any button to start\n";
+    KEYBOARD::getkey();
+    system("clear");
+	IMAGE::prints("ENTER N, M, \% OF MINES IN THE FIELD\n", {BOLD, RED, NONE});
 	cin >> n >> m >> per;
 	c = n * m * per / 100;
 	system("clear");
-	KEYBOARD::getkey();
-	IMAGE::prints("i or ^ - to move up\nj or <- - to move left\nk or v - to move down\nl or -> - to move Right\nEnter - to dig\nr - to put a flag", {BOLD, RED, NONE});
+	//KEYBOARD::getkey();
+	//IMAGE::prints("i or ^ - to move up\nj or <- - to move left\nk or v - to move down\nl or -> - to move Right\nEnter - to dig\nr - to put a flag", {BOLD, RED, NONE});
 	KEYBOARD::getkey();
 	system("clear");
 	game();
