@@ -28,6 +28,7 @@ int x = 1; int y = 1;
 #define RED 31
 #define WHITE 37
 #define BLUE 34
+#define GREEN 32
 //===================== phone color
 #define BG_BLACK 40
 #define BG_RED 41
@@ -45,8 +46,8 @@ int x = 1; int y = 1;
 #define upa 3065
 
 #define enter 10
+#define space 32
 #define r 114
-
 
 #define NONE -1
 
@@ -113,8 +114,6 @@ public:
     }
 };
 
-
-
 int getcommand(){
 	int ch = KEYBOARD::getkey();
 	return ch;
@@ -147,9 +146,9 @@ int movement(){
 		case upa:
 		if(x > 1) x--;
 		break;
-		case enter:
+		case space:
 		return 1;
-		case r:
+		case enter:
 		return 2;
 		break;
 		default:
@@ -212,7 +211,7 @@ void printlose(){
 	for(int i = 1; i <= n; i++){
 		for(int j = 1; j <= m; j++){
 			if(table[i][j] == -1){
-			IMAGE::printc(i, j, "*", {BOLD, RED, BG_WHITE});
+			IMAGE::printc(i, j, "*", {BOLD, ((visiualtable[i][j] != -3) ? RED : GREEN), BG_WHITE});
 			}else{
 			printcur(i, j, {NONE, BLACK, BG_WHITE});
 			}
@@ -271,7 +270,7 @@ void game(){
 	//bfs(findfirstzero());
 	print(visiualtable);
 
-	printcur(1,1, {BLINKING, BLACK, BG_WHITE});
+	printcur(1,1, {NONE, WHITE, BG_BLACK});
 	int count = 0;
 	
 	while(1){
@@ -306,7 +305,7 @@ void game(){
 			continue;
 		}
 		printcur(lastx, lasty, {NONE, BLACK, BG_WHITE});
-		printcur(x, y, {BLINKING, BLACK, BG_WHITE});
+		printcur(x, y, {NONE, WHITE, BG_BLACK});
 		if(!bl) continue;
 		int a = x;
 		int b = y;
@@ -320,7 +319,7 @@ void game(){
 		bfs({a, b});
 		count++;
 		print(visiualtable);
-		printcur(x, y, {BLINKING, BLACK, BG_WHITE});
+		printcur(x, y, {NONE, WHITE, BG_BLACK});
 	}
 }
 
@@ -336,5 +335,6 @@ int main(){
 	//IMAGE::prints("i or ^ - to move up\nj or <- - to move left\nk or v - to move down\nl or -> - to move Right\nEnter - to dig\nr - to put a flag", {BOLD, RED, NONE});
 	KEYBOARD::getkey();
 	system("clear");
+	cout << /*(show ? "\033[?25h" : */"\033[?25l"/*)*/;
 	game();
 }
