@@ -50,46 +50,73 @@ int x = 1; int y = 1;
 #define r 114
 
 #define NONE -1
-
-class IMAGE{
+class CONSOLE{
 public:
-    struct font {
-        int font_type, font_color, bg_color;
+	class IMAGE{
+	public:
+	    struct font {
+	        int font_type, font_color, bg_color;
 
-        font(int _a = -1, int _b = -1, int _c = -1) {
-            font_type = _a;
-            font_color = _b;
-            bg_color = _c;
-        }
+	        font(int _a = -1, int _b = -1, int _c = -1) {
+	            font_type = _a;
+	            font_color = _b;
+	            bg_color = _c;
+	        }
 
-        string get_string() {
-            string ans;
-            if (font_type != -1) {
-                ans.append(to_string(font_type));
-                if (font_color != -1 || bg_color != -1)ans.push_back(';');
-            }
-            if (font_color != -1) {
-                ans.append(to_string(font_color));
-                if (bg_color != -1) ans.push_back(';');
-            }
-            if (bg_color != -1) { ans.append(to_string(bg_color)); }
-            return ans;
-        }
-    };
+	        string get_string() {
+	            string ans;
+	            if (font_type != -1) {
+	                ans.append(to_string(font_type));
+	                if (font_color != -1 || bg_color != -1)ans.push_back(';');
+	            }
+	            if (font_color != -1) {
+	                ans.append(to_string(font_color));
+	                if (bg_color != -1) ans.push_back(';');
+	            }
+	            if (bg_color != -1) { ans.append(to_string(bg_color)); }
+	            return ans;
+	        }
+	    };
 
-    static void printc(int x, int y, const std::string &s, font f) {
-        string cmd = f.get_string();
-        printf("\033[%d;%dH\x1b[%sm%s\x1b[0m", x+1, y+1, cmd.c_str(), s.c_str());
-        fflush(stdout);
-    }
+	    static void printc(int x, int y, const std::string &s, font f) {
+	        string cmd = f.get_string();
+	        printf("\033[%d;%dH\x1b[%sm%s\x1b[0m", x+1, y+1, cmd.c_str(), s.c_str());
+	        fflush(stdout);
+	    }
 
-    static void prints(const std::string s, font f){
-    	string cmd = f.get_string();
-    	for(int i = 0; i < (int)s.size(); i++){
-    		string ch = s.substr(i, 1);
-    	 	printf("\x1b[%sm%s\x1b[0m", cmd.c_str(), ch.c_str());
-    	}
-    }
+	    static void prints(const std::string s, font f){
+	    	string cmd = f.get_string();
+	    	for(int i = 0; i < (int)s.size(); i++){
+	    		string ch = s.substr(i, 1);
+	    	 	printf("\x1b[%sm%s\x1b[0m", cmd.c_str(), ch.c_str());
+	    	}
+	    }
+	};
+
+	static void printcur(int i, int j, IMAGE::font f){
+		if(visiualtable[i][j] == -3) {IMAGE::printc(i, j, "#", f); return;}
+		if(visiualtable[i][j] > -1 && table[i][j] == 0) IMAGE::printc(i, j, "░", f);
+		else if(visiualtable[i][j] > -1) IMAGE::printc(i, j, to_string(visiualtable[i][j]), f);
+		else IMAGE::printc(i, j, ".", f);
+	}
+
+	static void print(vector<vector<int>> &table){
+		for(int i = 1; i <= m; i++) IMAGE::printc(0, i, "━", {NONE, NONE, NONE});
+		for(int i = 1; i <= m; i++) IMAGE::printc(n+1, i, "━", {NONE, NONE, NONE});
+		for(int i = 1; i <= n; i++) IMAGE::printc(i, m+1, "┃", {NONE, NONE, NONE});
+		for(int i = 1; i <= n; i++) IMAGE::printc(i, 0, "┃", {NONE, NONE, NONE});
+		IMAGE::printc(n+1, 0, "┗", {NONE, NONE, NONE});
+		IMAGE::printc(0, m+1, "┓", {NONE, NONE, NONE});
+		IMAGE::printc(n+1, m+1, "┛", {NONE, NONE, NONE});
+		IMAGE::printc(0, 0, "┏", {NONE, NONE, NONE});
+		for(int i = 1; i <= n; i++) {for(int j = 1; j <= m; j++) printcur(i, j, {NONE, BLACK, BG_WHITE}); cout << "\n";}
+	}
+
+	static void printstr(int x, int y, string s){
+		for(int i = 0; i < (int)s.size(); i++){
+			IMAGE::printc(x, y+i, s.substr(i, 1), {NONE, NONE, NONE});
+		}
+	}
 };
 
 class KEYBOARD{
@@ -112,144 +139,122 @@ public:
      tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
      return ch;
     }
-};
+	
+	static int getcommand(){
+		int ch = KEYBOARD::getkey();
+		return ch;
+	}
 
-int getcommand(){
-	int ch = KEYBOARD::getkey();
-	return ch;
-}
-
-int movement(){
-	int s = getcommand();
-	switch(s){
-		case right:
-		if(y < m) y++;
-		break;
-		case righta:
-		if(y < m) y++;
-		break;
-		case down:
-		if(x < n) x++;
-		break;
-		case downa:
-		if(x < n) x++;
-		break;
-		case left:
-		if(y > 1) y--;
-		break;
-		case lefta:
-		if(y > 1) y--;
-		break;
-		case up:
-		if(x > 1) x--;
-		break;
-		case upa:
-		if(x > 1) x--;
-		break;
-		case space:
-		return 1;
-		case enter:
-		return 2;
-		break;
-		default:
+	static int movement(){
+		int s = getcommand();
+		switch(s){
+			case right:
+			if(y < m) y++;
+			break;
+			case righta:
+			if(y < m) y++;
+			break;
+			case down:
+			if(x < n) x++;
+			break;
+			case downa:
+			if(x < n) x++;
+			break;
+			case left:
+			if(y > 1) y--;
+			break;
+			case lefta:
+			if(y > 1) y--;
+			break;
+			case up:
+			if(x > 1) x--;
+			break;
+			case upa:
+			if(x > 1) x--;
+			break;
+			case space:
+			return 1;
+			case enter:
+			return 2;
+			break;
+			default:
+			return 0;
+		}
 		return 0;
 	}
-	return 0;
-}
+};
 
-void printcur(int i, int j, IMAGE::font f){
-	if(visiualtable[i][j] == -3) {IMAGE::printc(i, j, "#", f); return;}
-	if(visiualtable[i][j] > -1 && table[i][j] == 0) IMAGE::printc(i, j, "░", f);
-	else if(visiualtable[i][j] > -1) IMAGE::printc(i, j, to_string(visiualtable[i][j]), f);
-	else IMAGE::printc(i, j, ".", f);
-}
+class GAMESTR{
+public:
+	static void bfs(pair<int, int> v){
+		if(used[v.first][v.second] == 1) return;
 
-void print(vector<vector<int>> &table){
-	for(int i = 1; i <= m; i++) IMAGE::printc(0, i, "━", {NONE, NONE, NONE});
-	for(int i = 1; i <= m; i++) IMAGE::printc(n+1, i, "━", {NONE, NONE, NONE});
-	for(int i = 1; i <= n; i++) IMAGE::printc(i, m+1, "┃", {NONE, NONE, NONE});
-	for(int i = 1; i <= n; i++) IMAGE::printc(i, 0, "┃", {NONE, NONE, NONE});
-	IMAGE::printc(n+1, 0, "┗", {NONE, NONE, NONE});
-	IMAGE::printc(0, m+1, "┓", {NONE, NONE, NONE});
-	IMAGE::printc(n+1, m+1, "┛", {NONE, NONE, NONE});
-	IMAGE::printc(0, 0, "┏", {NONE, NONE, NONE});
-	for(int i = 1; i <= n; i++) {for(int j = 1; j <= m; j++) printcur(i, j, {NONE, BLACK, BG_WHITE}); cout << "\n";}
-}
+		used[v.first][v.second] = 1;
 
-void bfs(pair<int, int> v){
-	if(used[v.first][v.second] == 1) return;
+		if(table[v.first][v.second] != -1) visiualtable[v.first][v.second] = table[v.first][v.second];
+		
+		if(table[v.first][v.second] != 0) return;
 
-	used[v.first][v.second] = 1;
+		int x = v.first;
+		int y = v.second;
 
-	if(table[v.first][v.second] != -1) visiualtable[v.first][v.second] = table[v.first][v.second];
-	
-	if(table[v.first][v.second] != 0) return;
-
-	int x = v.first;
-	int y = v.second;
-
-	bfs({x-1, y});
-	bfs({x+1, y});
-	bfs({x, y+1});
-	bfs({x, y-1});
-	bfs({x-1, y+1});
-	bfs({x-1, y-1});
-	bfs({x+1, y+1});
-	bfs({x+1, y-1});
-}
-
-bool ifwin(){
-	for(int i = 1; i <= n; i++){
-		for(int j = 1; j <= m; j++){
-			if(table[i][j] != -1 && visiualtable[i][j] == -2) return false;
-		}
+		bfs({x-1, y});
+		bfs({x+1, y});
+		bfs({x, y+1});
+		bfs({x, y-1});
+		bfs({x-1, y+1});
+		bfs({x-1, y-1});
+		bfs({x+1, y+1});
+		bfs({x+1, y-1});
 	}
-	return true;
-}
 
-void printlose(){
-	for(int i = 1; i <= n; i++){
-		for(int j = 1; j <= m; j++){
-			if(table[i][j] == -1){
-			IMAGE::printc(i, j, "*", {BOLD, ((visiualtable[i][j] != -3) ? RED : GREEN), BG_WHITE});
-			}else{
-			printcur(i, j, {NONE, BLACK, BG_WHITE});
+	static bool ifwin(){
+		for(int i = 1; i <= n; i++){
+			for(int j = 1; j <= m; j++){
+				if(table[i][j] != -1 && visiualtable[i][j] == -2) return false;
 			}
 		}
-		cout << "\n";
+		return true;
 	}
-}
 
-void buildfield(int xx, int yy){
-	set<pair<int, int>> st;
-
-	for(int i = 0; (int)st.size() < c; i++){
-		int x = rnd() % n + 1;
-		int y = rnd() % m + 1;
-		if(st.count({x, y}) != 0 || (abs(x-xx) <= 1 && abs(y-yy) <= 1)) continue;
-		st.insert({x, y});
-		table[x][y] = -1;
+	static void printlose(){
+		for(int i = 1; i <= n; i++){
+			for(int j = 1; j <= m; j++){
+				if(table[i][j] == -1){
+				CONSOLE::IMAGE::printc(i, j, "*", {BOLD, ((visiualtable[i][j] != -3) ? RED : GREEN), BG_WHITE});
+				}else{
+				CONSOLE::printcur(i, j, {NONE, BLACK, BG_WHITE});
+				}
+			}
+			cout << "\n";
+		}
 	}
-}
 
-void buildtable(){
-	for(int i = 1; i <= n; i++){
-		for(int j = 1; j <= m; j++){
-			if(table[i][j] == -1) continue;
-			for(int k = max(i-1, 1); k <= min(i+1, n); k++){
-				for(int l = max(j-1, 1); l <= min(j+1, m); l++){
-					if(table[k][l] == -1) table[i][j]++;
+	static void buildfield(int xx, int yy){
+		set<pair<int, int>> st;
+
+		for(int i = 0; (int)st.size() < c; i++){
+			int x = rnd() % n + 1;
+			int y = rnd() % m + 1;
+			if(st.count({x, y}) != 0 || (abs(x-xx) <= 1 && abs(y-yy) <= 1)) continue;
+			st.insert({x, y});
+			table[x][y] = -1;
+		}
+	}
+
+	static void buildtable(){
+		for(int i = 1; i <= n; i++){
+			for(int j = 1; j <= m; j++){
+				if(table[i][j] == -1) continue;
+				for(int k = max(i-1, 1); k <= min(i+1, n); k++){
+					for(int l = max(j-1, 1); l <= min(j+1, m); l++){
+						if(table[k][l] == -1) table[i][j]++;
+					}
 				}
 			}
 		}
 	}
-}
-
-void printstr(int x, int y, string s){
-	for(int i = 0; i < (int)s.size(); i++){
-		IMAGE::printc(x, y+i, s.substr(i, 1), {NONE, NONE, NONE});
-	}
-}
+};
 
 void game(){
 	table.resize(n+2, vector<int> (m+2, -1)); for(int i = 1; i <= n; i++) for(int j = 1; j<=m; j++) table[i][j] = 0;
@@ -257,69 +262,69 @@ void game(){
 	visiualtable.resize(n+2, vector<int> (m+2, -2));
 	used.resize(n+2, vector<int> (m+2, 0));
 
-	print(visiualtable);
+	CONSOLE::print(visiualtable);
 
-	printstr(n+3, 0, "press i, j, k, l to move");
-	printstr(n+3, 29, "press r to put/delete a flag");
-	printstr(n+3, 63, "press Enter to open some space");
+	CONSOLE::printstr(n+3, 0, "press i, j, k, l to move");
+	CONSOLE::printstr(n+3, 29, "press Enter to put/delete a flag");
+	CONSOLE::printstr(n+3, 63, "press Space to open some space");
 
 	//int a, b;
 	//KEYBOARD::getkey();
 	int lastx = 0, lasty = 0;
 
 	//bfs(findfirstzero());
-	print(visiualtable);
+	CONSOLE::print(visiualtable);
 
-	printcur(1,1, {NONE, WHITE, BG_BLACK});
+	CONSOLE::printcur(1,1, {NONE, WHITE, BG_BLACK});
 	int count = 0;
 	
 	while(1){
 		//IMAGE::printc(n+5, 0, " ", {INVISIBLE, NONE, NONE});
-		if(ifwin() && count > 0){
+		if(GAMESTR::ifwin() && count > 0){
 			system("clear");
-			IMAGE::prints("You WIN\n", {BOLD, RED, NONE});
+			CONSOLE::IMAGE::prints("You WIN\n", {BOLD, RED, NONE});
 			//cout << "Your time: " <<  (double)clock() / CLOCKS_PER_SEC << "\n";
 			//auto ch = KEYBOARD::getkey();
 			exit(0);
 		}
 		lastx = x;
 		lasty = y;
-		int bl = movement();
+		int bl = KEYBOARD::movement();
 		if(bl == 2){
 			if(visiualtable[x][y] == -3){
 				if(used[x][y]){
 					if(table[x][y] != 0){
-					IMAGE::printc(x, y, to_string(table[x][y]), {BOLD, BLACK, BG_WHITE});
+					CONSOLE::IMAGE::printc(x, y, to_string(table[x][y]), {BOLD, BLACK, BG_WHITE});
 					}else{
-					IMAGE::printc(x, y, "░", {BOLD, BLACK, BG_WHITE});
+					CONSOLE::IMAGE::printc(x, y, "░", {BOLD, BLACK, BG_WHITE});
 					}
 					visiualtable[x][y] = table[x][y];
 				}else{
-					IMAGE::printc(x, y, ".", {BOLD, BLACK, BG_WHITE});
+					CONSOLE::IMAGE::printc(x, y, ".", {BOLD, BLACK, BG_WHITE});
 					visiualtable[x][y] = -1;
 				}
 				continue;
 			}
-			IMAGE::printc(x, y, "#", {BOLD, BLACK, BG_WHITE});
+			CONSOLE::IMAGE::printc(x, y, "#", {BOLD, BLACK, BG_WHITE});
 			visiualtable[x][y] = -3;
 			continue;
 		}
-		printcur(lastx, lasty, {NONE, BLACK, BG_WHITE});
-		printcur(x, y, {NONE, WHITE, BG_BLACK});
+		CONSOLE::printcur(lastx, lasty, {NONE, BLACK, BG_WHITE});
+		CONSOLE::printcur(x, y, {NONE, WHITE, BG_BLACK});
 		if(!bl) continue;
 		int a = x;
 		int b = y;
 		if(table[a][b] == -1){
 			system("clear");
-			IMAGE::prints("You LOSE\n", {BOLD, RED, NONE});
-			printlose();
+			CONSOLE::IMAGE::prints("You LOSE\n", {BOLD, RED, NONE});
+			GAMESTR::printlose();
 			exit(0);
 		}
-		if(count == 0) { buildfield(a, b); buildtable();}
-		bfs({a, b});
+		if(count == 0) { GAMESTR::buildfield(a, b); GAMESTR::buildtable();}
+		GAMESTR::bfs({a, b});
 		count++;
-		print(visiualtable);
-		printcur(x, y, {NONE, WHITE, BG_BLACK});
+		CONSOLE::print(visiualtable);
+		CONSOLE::printcur(x, y, {NONE, WHITE, BG_BLACK});
 	}
 }
 
@@ -327,7 +332,7 @@ int main(){
 	cout << " _   __  __ _              \n| |_|  \\/  (_)_ _  ___ _ _ \n|  _| |\\/| | | ' \\/ -_) '_|\n \\__|_|  |_|_|_||_\\___|_|  \n\n\n\n\nPress any button to start\n";
     KEYBOARD::getkey();
     system("clear");
-	IMAGE::prints("ENTER N, M, \% OF MINES IN THE FIELD\n", {BOLD, RED, NONE});
+	CONSOLE::IMAGE::prints("ENTER N, M, \% OF MINES IN THE FIELD\n", {BOLD, RED, NONE});
 	cin >> n >> m >> per;
 	c = n * m * per / 100;
 	system("clear");
