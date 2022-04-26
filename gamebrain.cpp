@@ -50,9 +50,9 @@ int x = 1; int y = 1;
 #define r 114
 
 #define NONE -1
-class CONSOLE{
+class Console{
 public:
-	class IMAGE{
+	class Image{
 	public:
 	    struct font {
 	        int font_type, font_color, bg_color;
@@ -93,55 +93,58 @@ public:
 	    }
 	};
 
-	static void printcur(int i, int j, IMAGE::font f){
-		if(visiualtable[i][j] == -3) {IMAGE::printc(i, j, "#", f); return;}
-		if(visiualtable[i][j] > -1 && table[i][j] == 0) IMAGE::printc(i, j, "░", f);
-		else if(visiualtable[i][j] > -1) IMAGE::printc(i, j, to_string(visiualtable[i][j]), f);
-		else IMAGE::printc(i, j, ".", f);
+	static void printcur(int i, int j, Image::font f){
+		if(visiualtable[i][j] == -3) {Image::printc(i, j, "#", f); return;}
+		if(visiualtable[i][j] > -1 && table[i][j] == 0) Image::printc(i, j, "░", f);
+		else if(visiualtable[i][j] > -1) Image::printc(i, j, to_string(visiualtable[i][j]), f);
+		else Image::printc(i, j, ".", f);
 	}
 
 	static void print(vector<vector<int>> &table){
-		for(int i = 1; i <= m; i++) IMAGE::printc(0, i, "━", {NONE, NONE, NONE});
-		for(int i = 1; i <= m; i++) IMAGE::printc(n+1, i, "━", {NONE, NONE, NONE});
-		for(int i = 1; i <= n; i++) IMAGE::printc(i, m+1, "┃", {NONE, NONE, NONE});
-		for(int i = 1; i <= n; i++) IMAGE::printc(i, 0, "┃", {NONE, NONE, NONE});
-		IMAGE::printc(n+1, 0, "┗", {NONE, NONE, NONE});
-		IMAGE::printc(0, m+1, "┓", {NONE, NONE, NONE});
-		IMAGE::printc(n+1, m+1, "┛", {NONE, NONE, NONE});
-		IMAGE::printc(0, 0, "┏", {NONE, NONE, NONE});
+		for(int i = 1; i <= m; i++) Image::printc(0, i, "━", {NONE, NONE, NONE});
+		for(int i = 1; i <= m; i++) Image::printc(n+1, i, "━", {NONE, NONE, NONE});
+		for(int i = 1; i <= n; i++) Image::printc(i, m+1, "┃", {NONE, NONE, NONE});
+		for(int i = 1; i <= n; i++) Image::printc(i, 0, "┃", {NONE, NONE, NONE});
+		Image::printc(n+1, 0, "┗", {NONE, NONE, NONE});
+		Image::printc(0, m+1, "┓", {NONE, NONE, NONE});
+		Image::printc(n+1, m+1, "┛", {NONE, NONE, NONE});
+		Image::printc(0, 0, "┏", {NONE, NONE, NONE});
 		for(int i = 1; i <= n; i++) {for(int j = 1; j <= m; j++) printcur(i, j, {NONE, BLACK, BG_WHITE}); cout << "\n";}
 	}
 
 	static void printstr(int x, int y, string s){
 		for(int i = 0; i < (int)s.size(); i++){
-			IMAGE::printc(x, y+i, s.substr(i, 1), {NONE, NONE, NONE});
+			Image::printc(x, y+i, s.substr(i, 1), {NONE, NONE, NONE});
 		}
 	}
 };
 
-class KEYBOARD{
+class Keyboard{
 public:
-    static int getkey(){
-     struct termios oldt,
-     newt;
-     int ch;
-     tcgetattr( STDIN_FILENO, &oldt );
-     newt = oldt;
-     newt.c_lflag &= ~( ICANON | ECHO );
-     tcsetattr( STDIN_FILENO, TCSANOW, &newt );
-     ch = getchar();
-     if(ch == 27){
-        ch = getchar();
-        if(ch != 91) {tcsetattr( STDIN_FILENO, TCSANOW, &oldt ); return ch;}
-        ch = getchar();
-        return ch + 3000;
-     }
-     tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
-     return ch;
-    }
+	class GetKeys{
+	public:
+	    static int getkey(){
+	     struct termios oldt,
+	     newt;
+	     int ch;
+	     tcgetattr( STDIN_FILENO, &oldt );
+	     newt = oldt;
+	     newt.c_lflag &= ~( ICANON | ECHO );
+	     tcsetattr( STDIN_FILENO, TCSANOW, &newt );
+	     ch = getchar();
+	     if(ch == 27){
+	        ch = getchar();
+	        if(ch != 91) {tcsetattr( STDIN_FILENO, TCSANOW, &oldt ); return ch;}
+	        ch = getchar();
+	        return ch + 3000;
+	     }
+	     tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
+	     return ch;
+	    }
+	};
 	
 	static int getcommand(){
-		int ch = KEYBOARD::getkey();
+		int ch = Keyboard::GetKeys::getkey();
 		return ch;
 	}
 
@@ -184,7 +187,7 @@ public:
 	}
 };
 
-class GAMESTR{
+class Game{
 public:
 	static void bfs(pair<int, int> v){
 		if(used[v.first][v.second] == 1) return;
@@ -221,9 +224,9 @@ public:
 		for(int i = 1; i <= n; i++){
 			for(int j = 1; j <= m; j++){
 				if(table[i][j] == -1){
-				CONSOLE::IMAGE::printc(i, j, "*", {BOLD, ((visiualtable[i][j] != -3) ? RED : GREEN), BG_WHITE});
+				Console::Image::printc(i, j, "*", {BOLD, ((visiualtable[i][j] != -3) ? RED : GREEN), BG_WHITE});
 				}else{
-				CONSOLE::printcur(i, j, {NONE, BLACK, BG_WHITE});
+				Console::printcur(i, j, {NONE, BLACK, BG_WHITE});
 				}
 			}
 			cout << "\n";
@@ -262,83 +265,83 @@ void game(){
 	visiualtable.resize(n+2, vector<int> (m+2, -2));
 	used.resize(n+2, vector<int> (m+2, 0));
 
-	CONSOLE::print(visiualtable);
+	Console::print(visiualtable);
 
-	CONSOLE::printstr(n+3, 0, "press i, j, k, l to move");
-	CONSOLE::printstr(n+3, 29, "press Enter to put/delete a flag");
-	CONSOLE::printstr(n+3, 63, "press Space to open some space");
+	Console::printstr(n+3, 0, "press i, j, k, l to move");
+	Console::printstr(n+3, 29, "press Enter to put/delete a flag");
+	Console::printstr(n+3, 63, "press Space to open some space");
 
 	//int a, b;
-	//KEYBOARD::getkey();
+	//Keyboard::getkey();
 	int lastx = 0, lasty = 0;
 
 	//bfs(findfirstzero());
-	CONSOLE::print(visiualtable);
+	Console::print(visiualtable);
 
-	CONSOLE::printcur(1,1, {NONE, WHITE, BG_BLACK});
+	Console::printcur(1,1, {NONE, WHITE, BG_BLACK});
 	int count = 0;
 	
 	while(1){
-		//IMAGE::printc(n+5, 0, " ", {INVISIBLE, NONE, NONE});
-		if(GAMESTR::ifwin() && count > 0){
+		//Image::printc(n+5, 0, " ", {INVISIBLE, NONE, NONE});
+		if(Game::ifwin() && count > 0){
 			system("clear");
-			CONSOLE::IMAGE::prints("You WIN\n", {BOLD, RED, NONE});
+			Console::Image::prints("You WIN\n", {BOLD, RED, NONE});
 			//cout << "Your time: " <<  (double)clock() / CLOCKS_PER_SEC << "\n";
-			//auto ch = KEYBOARD::getkey();
+			//auto ch = Keyboard::getkey();
 			exit(0);
 		}
 		lastx = x;
 		lasty = y;
-		int bl = KEYBOARD::movement();
+		int bl = Keyboard::movement();
 		if(bl == 2){
 			if(visiualtable[x][y] == -3){
 				if(used[x][y]){
 					if(table[x][y] != 0){
-					CONSOLE::IMAGE::printc(x, y, to_string(table[x][y]), {BOLD, BLACK, BG_WHITE});
+					Console::Image::printc(x, y, to_string(table[x][y]), {BOLD, BLACK, BG_WHITE});
 					}else{
-					CONSOLE::IMAGE::printc(x, y, "░", {BOLD, BLACK, BG_WHITE});
+					Console::Image::printc(x, y, "░", {BOLD, BLACK, BG_WHITE});
 					}
 					visiualtable[x][y] = table[x][y];
 				}else{
-					CONSOLE::IMAGE::printc(x, y, ".", {BOLD, BLACK, BG_WHITE});
+					Console::Image::printc(x, y, ".", {BOLD, BLACK, BG_WHITE});
 					visiualtable[x][y] = -1;
 				}
 				continue;
 			}
-			CONSOLE::IMAGE::printc(x, y, "#", {BOLD, BLACK, BG_WHITE});
+			Console::Image::printc(x, y, "#", {BOLD, BLACK, BG_WHITE});
 			visiualtable[x][y] = -3;
 			continue;
 		}
-		CONSOLE::printcur(lastx, lasty, {NONE, BLACK, BG_WHITE});
-		CONSOLE::printcur(x, y, {NONE, WHITE, BG_BLACK});
+		Console::printcur(lastx, lasty, {NONE, BLACK, BG_WHITE});
+		Console::printcur(x, y, {NONE, WHITE, BG_BLACK});
 		if(!bl) continue;
 		int a = x;
 		int b = y;
 		if(table[a][b] == -1){
 			system("clear");
-			CONSOLE::IMAGE::prints("You LOSE\n", {BOLD, RED, NONE});
-			GAMESTR::printlose();
+			Console::Image::prints("You LOSE\n", {BOLD, RED, NONE});
+			Game::printlose();
 			exit(0);
 		}
-		if(count == 0) { GAMESTR::buildfield(a, b); GAMESTR::buildtable();}
-		GAMESTR::bfs({a, b});
+		if(count == 0) { Game::buildfield(a, b); Game::buildtable();}
+		Game::bfs({a, b});
 		count++;
-		CONSOLE::print(visiualtable);
-		CONSOLE::printcur(x, y, {NONE, WHITE, BG_BLACK});
+		Console::print(visiualtable);
+		Console::printcur(x, y, {NONE, WHITE, BG_BLACK});
 	}
 }
 
 int main(){
 	cout << " _   __  __ _              \n| |_|  \\/  (_)_ _  ___ _ _ \n|  _| |\\/| | | ' \\/ -_) '_|\n \\__|_|  |_|_|_||_\\___|_|  \n\n\n\n\nPress any button to start\n";
-    KEYBOARD::getkey();
+    Keyboard::GetKeys::getkey();
     system("clear");
-	CONSOLE::IMAGE::prints("ENTER N, M, \% OF MINES IN THE FIELD\n", {BOLD, RED, NONE});
+	Console::Image::prints("ENTER N, M, \% OF MINES IN THE FIELD\n", {BOLD, RED, NONE});
 	cin >> n >> m >> per;
 	c = n * m * per / 100;
 	system("clear");
-	//KEYBOARD::getkey();
-	//IMAGE::prints("i or ^ - to move up\nj or <- - to move left\nk or v - to move down\nl or -> - to move Right\nEnter - to dig\nr - to put a flag", {BOLD, RED, NONE});
-	KEYBOARD::getkey();
+	//Keyboard::getkey();
+	//Ima::prints("i or ^ - to move up\nj or <- - to move left\nk or v - to move down\nl or -> - to move Right\nEnter - to dig\nr - to put a flag", {BOLD, RED, NONE});
+	Keyboard::GetKeys::getkey();
 	system("clear");
 	cout << /*(show ? "\033[?25h" : */"\033[?25l"/*)*/;
 	game();
